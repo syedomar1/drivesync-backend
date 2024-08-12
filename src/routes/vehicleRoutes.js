@@ -1,3 +1,13 @@
+const express = require('express');
+const { getVehicles, createVehicle } = require('../controllers/vehicleController');
+const Vehicle = require('../models/Vehicle');
+const Driver = require('../models/Driver');
+
+const router = express.Router();
+
+// Route to get all vehicles and create a new vehicle
+router.route('/').get(getVehicles).post(createVehicle);
+
 // Route to assign a driver to a vehicle
 router.post('/:vehicleId/assign', async (req, res) => {
     const { vehicleId } = req.params;
@@ -65,4 +75,5 @@ router.post('/:vehicleId/assign', async (req, res) => {
       res.status(500).json({ message: 'Error unassigning driver', error });
     }
   });
-  
+
+module.exports = router;

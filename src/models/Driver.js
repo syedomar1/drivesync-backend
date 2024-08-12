@@ -6,6 +6,7 @@ const DriverSchema = new mongoose.Schema({
   phone: { type: String, required: true, unique: true },
   location: { type: String, required: true },
   assignedVehicle: { type: mongoose.Schema.Types.ObjectId, ref: 'Vehicle' },
+  available: { type: Boolean, default: true},
   shift: { type: String, enum: ['12am-8am', '8am-4pm', '4pm-12am'] },
 }, { timestamps: true });
 

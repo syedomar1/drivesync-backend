@@ -3,6 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 require('dotenv').config();
+const authRouter = require('./routes/auth');
 const driverRoutes = require('./routes/driverRoutes');
 const vehicleRoutes = require('./routes/vehicleRoutes');
 
@@ -34,6 +35,8 @@ mongoose.connect(process.env.MONGODB_URI, {
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true })); 
+  app.use(authRouter);
+  app.use('/api', authRouter);
 
 app.use('/api/drivers', driverRoutes);
 app.use('/api/vehicles', vehicleRoutes);

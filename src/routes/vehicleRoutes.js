@@ -1,75 +1,140 @@
-const express = require('express');
-const { getVehicles, createVehicle } = require('../controllers/vehicleController');
-const Vehicle = require('../models/Vehicle'); // Adjust the path as needed
-const Driver = require('../models/Driver'); // Adjust the path as needed
+import React, { useState, useEffect } from 'react';
 
-const router = express.Router();
+const VehicleList = ({ drivers, vehicles, assignDriver, unassignDriver }) => {
+  const [selectedDriver, setSelectedDriver] = useState('');
+  const [vehicleState, setVehicleState] = useState(vehicles);
 
-// Route to get all vehicles and create a new vehicle
-router.route('/').get(getVehicles).post(createVehicle);
+  const API_URL = process.env.REACT_APP_BACKEND_URL_PROD || process.env.REACT_APP_BACKEND_URL_LOCAL;
 
-// Route to assign a driver to a vehicle
-router.post('/:vehicleId/assign', async (req, res) => {
-  const { vehicleId } = req.params;
-  const { driverId } = req.body;
+  // Handle Assign functionality
+  const handleAssign = async (vehicleId, driverId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/vehicles/${vehicleId}/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ driverId }),
+      });
 
-  try {
-    // Find the vehicle
-    const vehicle = await Vehicle.findById(vehicleId);
-    if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found' });
+      if (response.ok) {
+        const updatedVehicle = await response.json();
+        setVehicleState(prevState => 
+          prevState.map(vehicle =>
+            vehicle._id === updatedVehicle._id ? updatedVehicle : vehicle
+          )
+        );
+        // Update driver availability
+        setDriverAvailability(driverId, false);
+        setSelectedDriver('');
+      } else {
+        console.error('Failed to assign driver');
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
+  };
 
-    // Find the driver
-    const driver = await Driver.findById(driverId);
-    if (!driver || !driver.available) {
-      return res.status(404).json({ message: 'Driver not found or not available' });
+  // Handle Unassign functionality
+  const handleUnassign = async (vehicleId) => {
+    try {
+      const response = await fetch(`${API_URL}/api/vehicles/${vehicleId}/unassign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const updatedVehicle = await response.json();
+        setVehicleState(prevState => 
+          prevState.map(vehicle =>
+            vehicle._id === updatedVehicle._id ? updatedVehicle : vehicle
+          )
+        );
+        // Update driver availability
+        if (updatedVehicle.assignedDriver) {
+          setDriverAvailability(updatedVehicle.assignedDriver._id, true);
+        }
+        setSelectedDriver('');
+      } else {
+        console.error('Failed to unassign driver');
+      }
+    } catch (error) {
+      console.error('Error:', error);
     }
+  };
 
-    // Assign the driver to the vehicle
-    vehicle.assignedDriver = driverId;
-    await vehicle.save();
+  // Set driver availability
+  const setDriverAvailability = (driverId, available) => {
+    setVehicleState(prevState => 
+      prevState.map(vehicle => ({
+        ...vehicle,
+        drivers: vehicle.drivers.map(driver =>
+          driver._id === driverId ? { ...driver, available } : driver
+        )
+      }))
+    );
+  };
 
-    // Update the driver's availability
-    driver.available = false;
-    await driver.save();
+  useEffect(() => {
+    // Initialize vehicle state on component mount
+    setVehicleState(vehicles);
+  }, [vehicles]);
 
-    res.json({ message: 'Driver assigned to vehicle' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error assigning driver', error });
-  }
-});
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4 text-darkPurple">Vehicle List</h2>
+      <ul className="space-y-4">
+        {vehicleState.map((vehicle) => (
+          <li key={vehicle._id} className="border p-4 rounded-md">
+            <div className="font-medium">
+              {vehicle.make} {vehicle.model} ({vehicle.licensePlate})
+            </div>
+            <div className="mt-2">
+              {vehicle.assignedDriver ? (
+                <div className="flex items-center justify-between">
+                  <span>Assigned to: {vehicle.assignedDriver.name}</span>
+                  <button
+                    onClick={() => handleUnassign(vehicle._id)}
+                    className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600 disabled:bg-gray-400"
+                  >
+                    Unassign Driver
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <select
+                    value={selectedDriver}
+                    onChange={(e) => setSelectedDriver(e.target.value)}
+                    className="border p-2 rounded"
+                  >
+                    <option value="">Select Driver</option>
+                    {drivers
+                      .filter((driver) => driver.available)
+                      .map((driver) => (
+                        <option key={driver._id} value={driver._id}>
+                          {driver.name}
+                        </option>
+                      ))}
+                  </select>
+                  <button
+                    onClick={() => handleAssign(vehicle._id, selectedDriver)}
+                    disabled={!selectedDriver}
+                    className={`ml-4 py-1 px-2 rounded ${
+                      selectedDriver ? 'bg-darkPurple text-white hover:bg-darkPurple/80' : 'bg-lightPurple text-white'
+                    }`}
+                  >
+                    Assign Driver
+                  </button>
+                </div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
 
-// Route to unassign a driver from a vehicle
-router.post('/:vehicleId/unassign', async (req, res) => {
-  const { vehicleId } = req.params;
-
-  try {
-    // Find the vehicle
-    const vehicle = await Vehicle.findById(vehicleId).populate('assignedDriver');
-    if (!vehicle) {
-      return res.status(404).json({ message: 'Vehicle not found' });
-    }
-
-    // Check if a driver is assigned
-    if (!vehicle.assignedDriver) {
-      return res.status(400).json({ message: 'No driver assigned to this vehicle' });
-    }
-
-    // Unassign the driver from the vehicle
-    const driverId = vehicle.assignedDriver._id;
-    vehicle.assignedDriver = null;
-    await vehicle.save();
-
-    // Update the driver's availability
-    const driver = await Driver.findById(driverId);
-    driver.available = true;
-    await driver.save();
-
-    res.json({ message: 'Driver unassigned from vehicle' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error unassigning driver', error });
-  }
-});
-
-module.exports = router;
+export default VehicleList;

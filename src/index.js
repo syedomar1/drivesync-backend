@@ -3,6 +3,8 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const connectDB = require('./config/db');
 require('dotenv').config();
+const driverRoutes = require('./routes/driverRoutes');
+const vehicleRoutes = require('./routes/vehicleRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -30,6 +32,9 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 
 app.use(express.json());
+
+app.use('/api/drivers', driverRoutes);
+app.use('/api/vehicles', vehicleRoutes);
 
 app.get('/', (req, res) => res.send('API is running...'));
 

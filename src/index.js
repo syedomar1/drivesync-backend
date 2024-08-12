@@ -31,7 +31,8 @@ mongoose.connect(process.env.MONGODB_URI, {
   }));
 
 
-app.use(express.json());
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true })); 
 
 app.use('/api/drivers', driverRoutes);
 app.use('/api/vehicles', vehicleRoutes);

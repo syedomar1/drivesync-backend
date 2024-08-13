@@ -6,7 +6,7 @@ require('dotenv').config();
 const authRouter = require('./routes/auth');
 const driverRoutes = require('./routes/driverRoutes');
 const vehicleRoutes = require('./routes/vehicleRoutes');
-const assignmentsRoute = require('./routes/assignments');
+const assignmentRoutes = require('./routes/assignments');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -40,7 +40,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 app.use('/api/drivers', driverRoutes);
 app.use('/api/vehicles', vehicleRoutes);
-app.use('/api/assignments', assignmentsRoute);
+app.use('/api/assignments', assignmentRoutes);
 
 app.get('/', (req, res) => res.send('API is running...'));
 

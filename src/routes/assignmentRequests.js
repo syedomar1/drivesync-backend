@@ -1,4 +1,3 @@
-// routes/assignmentRequests.js
 const express = require('express');
 const AssignmentRequest = require('../models/AssignmentRequest');
 const Assignment = require('../models/Assignment');
@@ -23,6 +22,29 @@ router.post('/send', async (req, res) => {
     res.status(200).json({ message: 'Assignment requests sent', assignmentRequests });
   } catch (error) {
     res.status(500).json({ error: 'Failed to send assignment requests' });
+  }
+});
+
+// Post a new assignment request
+router.post('/request', async (req, res) => {
+  try {
+    const { driverIds, vehicleId, startTime, endTime } = req.body;
+
+    // Creating a new assignment request for each driver
+    const assignmentRequests = driverIds.map(driverId => ({
+      driver: driverId,
+      vehicle: vehicleId,
+      startTime,
+      endTime,
+      status: 'pending' // Initial status
+    }));
+
+    // Save all assignment requests to the database
+    const newAssignments = await Assignment.insertMany(assignmentRequests);
+
+    res.status(201).json(newAssignments);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to create assignment request' });
   }
 });
 

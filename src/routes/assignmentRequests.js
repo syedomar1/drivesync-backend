@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const AssignmentRequest = require('../models/AssignmentRequest');
 const Assignment = require('../models/Assignment');
 const Driver = require('../models/Driver');
@@ -24,6 +25,9 @@ router.post('/send', async (req, res) => {
     res.status(500).json({ error: 'Failed to send assignment requests' });
   }
 });
+
+// Use mongoose.isValidObjectId to validate ObjectIDs
+const isValidObjectId = mongoose.isValidObjectId;
 
 router.post('/request', async (req, res) => {
     try {

@@ -25,29 +25,30 @@ router.post('/send', async (req, res) => {
   }
 });
 
-// Post a new assignment request
 router.post('/request', async (req, res) => {
     try {
       const { driverIds, vehicleId, startTime, endTime } = req.body;
-        // Validate IDs
-    if (!isValidObjectId(vehicleId) || !driverIds.every(id => isValidObjectId(id))) {
-        throw new Error('Invalid driver or vehicle ID');
+  
+      // Validate input
+      if (!Array.isArray(driverIds) || !driverIds.length || !isValidObjectId(vehicleId) || isNaN(new Date(startTime)) || isNaN(new Date(endTime))) {
+        return res.status(400).json({ error: 'Invalid input' });
       }
   
-      // Validate dates
-      if (isNaN(new Date(startTime)) || isNaN(new Date(endTime))) {
-        throw new Error('Invalid start or end time');
+      // Validate IDs
+      if (!driverIds.every(id => isValidObjectId(id))) {
+        return res.status(400).json({ error: 'Invalid driver ID(s)' });
       }
-      // Creating a new assignment request for each driver
+  
+      // Prepare assignment requests
       const assignmentRequests = driverIds.map(driverId => ({
         driver: driverId,
         vehicle: vehicleId,
         startTime,
         endTime,
-        status: 'pending' // Initial status
+        status: 'pending'
       }));
   
-      // Save all assignment requests to the database
+      // Save to database
       const newAssignments = await Assignment.insertMany(assignmentRequests);
   
       res.status(201).json(newAssignments);
@@ -56,6 +57,7 @@ router.post('/request', async (req, res) => {
       res.status(500).json({ error: 'Failed to create assignment request', details: error.message });
     }
   });
+  
 
 // Accept or reject an assignment request
 router.post('/respond', async (req, res) => {

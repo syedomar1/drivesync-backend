@@ -103,16 +103,27 @@ router.post('/respond', async (req, res) => {
 
 // Fetch pending assignment requests for a driver
 router.get('/driver/:driverId', async (req, res) => {
-  try {
-    const { driverId } = req.params;
-    const requests = await AssignmentRequest.find({ driver: driverId, status: 'pending' })
-      .populate('assignment')
-      .populate('driver');
-
-    res.status(200).json(requests);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch assignment requests' });
-  }
-});
+    try {
+      const { driverId } = req.params;
+  
+      // Validate driverId
+      if (!driverId || !mongoose.isValidObjectId(driverId)) {
+        return res.status(400).json({ error: 'Invalid or missing driver ID' });
+      }
+  
+      const requests = await AssignmentRequest.find({ driver: driverId, status: 'pending' })
+        .populate('assignment')
+        .populate('driver');
+  
+      if (!requests.length) {
+        return res.status(404).json({ message: 'No pending requests found' });
+      }
+  
+      res.status(200).json(requests);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch assignment requests' });
+    }
+  });
+  
 
 module.exports = router;

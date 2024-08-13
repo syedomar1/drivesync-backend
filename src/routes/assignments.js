@@ -3,6 +3,16 @@ const router = express.Router();
 const Assignment = require('../models/Assignment');
 const Driver = require('../models/Driver');
 
+router.get('/:id', async (req, res) => {
+  try {
+    const driver = await Driver.findById(req.params.id).populate('assignments.vehicleId'); // Adjust as needed
+    if (!driver) return res.status(404).json({ error: 'Driver not found' });
+    res.json(driver);
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 router.post('/', async (req, res) => {
   const { driverId, vehicleId, startTime, endTime } = req.body;
 

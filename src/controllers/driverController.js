@@ -13,10 +13,10 @@ exports.getDrivers = async (req, res) => {
 
 // Create a new driver
 exports.createDriver = async (req, res) => {
-  const { name, email, phone, location, shift } = req.body;
+  const { name, email, phone, location, shift, userId } = req.body;
 
   try {
-    const driver = new Driver({ name, email, phone, location, shift });
+    const driver = new Driver({ name, email, phone, location, shift, userId });
     await driver.save();
     res.status(201).json(driver);
   } catch (error) {

@@ -5,6 +5,11 @@ const AssignmentSchema = new mongoose.Schema({
   driverId: { type: mongoose.Schema.Types.ObjectId, ref: 'Driver', required: true },
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
+  status: {
+    type: String,
+    enum: ['pending', 'accepted', 'completed'],
+    default: 'pending',
+  },
 }, { timestamps: true });
 
 AssignmentSchema.index({ driverId: 1, startTime: 1, endTime: 1 }, { unique: true });

@@ -14,21 +14,21 @@ exports.getDrivers = async (req, res) => {
 
 // Create a new driver
 exports.createDriver = async (req, res) => {
-  const { name, email, phone, location, shift, userId } = req.body;
-
+  const { name, email, phone, location, shift} = req.body;
+  console.log(req.body);
   try {
     // Check if userId is valid
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return res.status(400).json({ message: 'Invalid userId format' });
-    }
+    // if (!mongoose.Types.ObjectId.isValid(userId)) {
+    //   return res.status(400).json({ message: 'Invalid userId format' });
+    // }
 
-    // Create and save the driver with the user _id
-    const driver = new Driver({ name, email, phone, location, shift, user: userId });
+    // Create and save the driver
+    const driver = new Driver({ name, email, phone, location, shift});
     await driver.save();
     res.status(201).json(driver);
   } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
+    res.status(400).json({ message: error.message });
+  }
 };
 
 

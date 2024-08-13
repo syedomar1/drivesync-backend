@@ -43,14 +43,14 @@ router.post('/request', async (req, res) => {
         return res.status(400).json({ error: 'Invalid driver ID(s)' });
       }
   
-      // Prepare assignment requests
-      const assignmentRequests = driverIds.map(driverId => ({
-        driver: driverId,
-        vehicle: vehicleId,
-        startTime,
-        endTime,
-        status: 'pending'
-      }));
+  // Prepare assignment requests
+  const assignmentRequests = driverIds.map(driverId => ({
+    driverId,  // Ensure you're using driverId
+    vehicleId, // Ensure you're using vehicleId
+    startTime,
+    endTime,
+    status: 'pending'
+  }));
   
       // Save to database
       const newAssignments = await Assignment.insertMany(assignmentRequests);

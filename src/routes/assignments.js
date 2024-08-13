@@ -3,7 +3,7 @@ const router = express.Router();
 const Assignment = require('../models/Assignment');
 const Driver = require('../models/Driver');
 
-router.post('/assignments', async (req, res) => {
+router.post('/', async (req, res) => {
   const { driverId, vehicleId, startTime, endTime } = req.body;
 
   try {

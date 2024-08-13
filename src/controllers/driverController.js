@@ -22,7 +22,7 @@ exports.createDriver = async (req, res) => {
       return res.status(400).json({ message: 'Invalid userId format' });
     }
 
-    // Create and save the driver
+    // Create and save the driver with the user _id
     const driver = new Driver({ name, email, phone, location, shift, user: userId });
     await driver.save();
     res.status(201).json(driver);
@@ -30,6 +30,7 @@ exports.createDriver = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
+
 
 // Assign a vehicle to a driver
 exports.assignVehicle = async (req, res) => {
